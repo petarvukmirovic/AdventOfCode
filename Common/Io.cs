@@ -1,0 +1,14 @@
+﻿namespace Common
+{
+    public static class Io
+    {
+        public static IEnumerable<string> AllInputLines()
+        {
+            string? line;
+            while((line = Console.ReadLine()) != null) 
+            { 
+                yield return line;
+            }
+        }
+    }
+}

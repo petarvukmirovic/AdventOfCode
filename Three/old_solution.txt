@@ -1,0 +1,51 @@
+int? FindLastDigitColumnPosition(int rowInd, int colStart, int offset)
+            {
+                if(rowInd < 0 || rowInd >= nrCols)
+                {
+                    return null;
+                }
+
+                int? lastPosition = null;
+                for(int i=colStart; i>=0 && i < nrCols && char.IsDigit(allLines![rowInd][i]); i += offset)
+                {
+                    lastPosition = i;
+                }
+                return lastPosition;
+            }
+
+            int ClearFoundNumber(char[] line, int? startIdx, int offset)
+            {
+                if(startIdx == null)
+                {
+                    return 0;
+                }
+
+                var numberBuilder = new StringBuilder();
+                for(int i = startIdx.Value; i>=0 && i<nrCols && char.IsDigit(line[i]); i += offset)
+                {
+                    numberBuilder.Append(line[i]);
+                    line[i] = '.';
+                }
+
+                if(numberBuilder.Length == 0)
+                {
+                    return 0;
+                }    
+
+                var nr =  int.Parse(offset > 0 ? numberBuilder.ToString() : new string(numberBuilder.ToString().Reverse().ToArray()!));
+                Console.WriteLine(nr);
+                return nr;
+            }
+
+            int FindAndClearNumbers(int row, int col)
+            {
+                if(row < 0 || row >= nrRows)
+                {
+                    return 0;
+                }
+
+                var line = allLines[row];
+                var lastLeft = FindLastDigitColumnPosition(row, col - 1, -1);
+                var lastRight = FindLastDigitColumnPosition(row, col + 1, 1);
+                return ClearFoundNumber(line, lastLeft, 1) + ClearFoundNumber(line, lastRight, -1);
+            }

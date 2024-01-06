@@ -10,5 +10,7 @@
                 yield return line;
             }
         }
+
+        public const StringSplitOptions IgnoreEmptyElements = StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.RemoveEmptyEntries;
     }
 }

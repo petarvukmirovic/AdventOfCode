@@ -3,17 +3,19 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.8.34330.188
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "One", "one\One.csproj", "{0435AFA6-87D9-44AB-BE3F-72535451FE7F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "One", "one\One.csproj", "{0435AFA6-87D9-44AB-BE3F-72535451FE7F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Common", "Common\Common.csproj", "{EE0FD055-D1C4-4163-9623-5080BE6093FD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Common", "Common\Common.csproj", "{EE0FD055-D1C4-4163-9623-5080BE6093FD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Two", "Two\Two.csproj", "{818AB736-B062-453A-AC8A-E2A0F55A5F4B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Two", "Two\Two.csproj", "{818AB736-B062-453A-AC8A-E2A0F55A5F4B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Three", "Three\Three.csproj", "{6CDB841C-5977-450B-89B0-53664CE5CBF7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Three", "Three\Three.csproj", "{6CDB841C-5977-450B-89B0-53664CE5CBF7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Four", "Four\Four.csproj", "{CC823949-BA5F-408E-947D-93CE7B539E52}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Four", "Four\Four.csproj", "{CC823949-BA5F-408E-947D-93CE7B539E52}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Five", "Five\Five.csproj", "{0A441381-54EE-453A-8D70-9BED79E5930B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Five", "Five\Five.csproj", "{0A441381-54EE-453A-8D70-9BED79E5930B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Six", "Six\Six.csproj", "{A37B8F9C-FE2D-4ABF-BDB9-2EDB8FF80EAD}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -45,6 +47,10 @@ Global
 		{0A441381-54EE-453A-8D70-9BED79E5930B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0A441381-54EE-453A-8D70-9BED79E5930B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0A441381-54EE-453A-8D70-9BED79E5930B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A37B8F9C-FE2D-4ABF-BDB9-2EDB8FF80EAD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A37B8F9C-FE2D-4ABF-BDB9-2EDB8FF80EAD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A37B8F9C-FE2D-4ABF-BDB9-2EDB8FF80EAD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A37B8F9C-FE2D-4ABF-BDB9-2EDB8FF80EAD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -35,7 +35,7 @@ namespace Five
             linesIterator.MoveNext();
 
             var firstLine = linesIterator.Current;
-            var seeds = firstLine.Substring(firstLine.IndexOf(':') + 1).Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.RemoveEmptyEntries).Select(long.Parse).ToArray();
+            var seeds = firstLine.Substring(firstLine.IndexOf(':') + 1).Split(' ', Io.IgnoreEmptyElements).Select(long.Parse).ToArray();
 
             linesIterator.MoveNext();
             linesIterator.MoveNext();

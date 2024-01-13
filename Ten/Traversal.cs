@@ -15,20 +15,20 @@
             j >= 0 && j < matrix[0].Length;
     }
 
-    public record BFSNode(Position current, (int i, int j) nextStepMovement, int distance)
+    public record TraversalNode(Position current, (int i, int j) nextStepMovement)
     {
         private static readonly (int i, int j) Left = (0, -1);
         private static readonly (int i, int j) Right = (0, 1);
         private static readonly (int i, int j) Up = (-1, 0);
         private static readonly (int i, int j) Down = (1, 0);
 
-        public BFSNode? Advance(char[][] pipeMatrix)
+        public TraversalNode? Advance(char[][] pipeMatrix)
         {
             Position nextPosition = new Position(current.i + nextStepMovement.i, current.j + nextStepMovement.j);
             return nextPosition.IsValidFor(pipeMatrix) ? GetPossibleBffNode(nextPosition, pipeMatrix) : null;
         }
 
-        private BFSNode? GetPossibleBffNode(Position nextPosition, char[][] pipeMatrix)
+        private TraversalNode? GetPossibleBffNode(Position nextPosition, char[][] pipeMatrix)
         {
             var currentPipe = pipeMatrix[current.i][current.j];
             var nextPipe = pipeMatrix[nextPosition.i][nextPosition.j];
@@ -37,7 +37,7 @@
                 '-' => nextPipe switch
                 {
                     'L' => MoveToPosition(nextPosition, movementDirection: Up, movementCondition: dir => dir.j == -1),
-                    'J' => MoveToPosition(nextPosition, movementDirection: Down, movementCondition: dir => dir.j == 1),
+                    'J' => MoveToPosition(nextPosition, movementDirection: Up, movementCondition: dir => dir.j == 1),
                     '7' => MoveToPosition(nextPosition, movementDirection: Down, movementCondition: dir => dir.j == 1),
                     'F' => MoveToPosition(nextPosition, movementDirection: Down, movementCondition: dir => dir.j == -1),
                     _ => PipeOneOf(nextPipe, '-', 'S') ? MoveToPosition(nextPosition) : null
@@ -83,7 +83,7 @@
                 'F' => nextPipe switch
                 {
                     '-' => MoveToPosition(nextPosition, movementCondition: dir => dir.j == 1),
-                    '|' => MoveToPosition(nextPosition, movementCondition: dir => dir.i == -1),
+                    '|' => MoveToPosition(nextPosition, movementCondition: dir => dir.i == 1),
                     'L' => MoveToPosition(nextPosition, movementDirection: Right, movementCondition: dir => dir.i == 1),
                     'J' => MoveToPosition(nextPosition, movementDirection: Up, movementCondition: dir => dir.j == 1) ??
                            MoveToPosition(nextPosition, movementDirection: Left, movementCondition: dir => dir.i == 1),
@@ -95,48 +95,33 @@
         }
 
         public static bool MoveAlways((int i, int j) _) => true;
-        private BFSNode? MoveToPosition(Position nextPosition, (int i, int j)? movementDirection = null, Func<(int i, int j), bool>? movementCondition = null)
+        private TraversalNode? MoveToPosition(Position nextPosition, (int i, int j)? movementDirection = null, Func<(int i, int j), bool>? movementCondition = null)
         {
             movementCondition ??= MoveAlways;
             return movementCondition(nextStepMovement) ? 
-                new BFSNode(nextPosition, movementDirection ?? nextStepMovement, distance + 1) : null;
+                new TraversalNode(nextPosition, movementDirection ?? nextStepMovement) : null;
         }
             
 
         private static bool PipeOneOf(char pipe, params char[] options) => options.Contains(pipe);
     }
 
-    public static class BFSTraversal
+    public static class Traversal
     {
-        public static int FindMaxDistance(Position startPos, BFSNode[] initialNodes, char[][] pipeMatrix)
+        public static int FindMaxDistance(TraversalNode initialNode, char[][] pipeMatrix)
         {
-            var seenPositions = new HashSet<Position>() { startPos };
-            var bfsQueue = new Queue<BFSNode>();
-            foreach (var node in initialNodes)
+            int steps = 1;
+            TraversalNode currentNode = initialNode;
+            while (pipeMatrix[currentNode.current.i][currentNode.current.j] != 'S')
             {
-                bfsQueue.Enqueue(node);
+                currentNode = currentNode.Advance(pipeMatrix)!;
+                steps++;
             }
 
-            while (bfsQueue.Any())
-            {
-                var currentNode = bfsQueue.Dequeue();
-                seenPositions.Add(currentNode.current);
-
-                var nextNode = currentNode.Advance(pipeMatrix);
-                if (nextNode != null)
-                {
-                    if (seenPositions.Contains(nextNode.current))
-                    {
-                        return currentNode.distance;
-                    }
-                    bfsQueue.Enqueue(nextNode);
-                }
-            }
-
-            return -1;
+            return steps/2;
         }
 
-        public static BFSNode[] GetInitialNodes(char[][] pipeMatrix, Position startPos)
+        public static TraversalNode[] GetInitialNodes(char[][] pipeMatrix, Position startPos)
         {
             var possibleMoves = new List<(int i, int j, (char, int)[] compatiblePipes)>()
                 {
@@ -149,7 +134,7 @@
             return possibleMoves.Select(move =>
             {
                 var newPosition = new Position(startPos.i + move.i, startPos.j + move.j);
-                BFSNode? bfsNode = null;
+                TraversalNode? bfsNode = null;
                 if (newPosition.IsValidFor(pipeMatrix))
                 {
                     var pipe = pipeMatrix[newPosition.i][newPosition.j];
@@ -161,7 +146,7 @@
                         {
                             direction = (move.i == 0 ? newDirection.Item2 : 0, move.j == 0 ? newDirection.Item2 : 0);
                         }
-                        bfsNode = new BFSNode(newPosition, direction, 1);
+                        bfsNode = new TraversalNode(newPosition, direction);
                     }
                 }
                 return bfsNode;

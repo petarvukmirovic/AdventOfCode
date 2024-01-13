@@ -18,8 +18,8 @@ namespace Ten
                 .SingleOrDefault(x => x != null);
             if(startPos != null)
             {
-                var initialNodes = BFSTraversal.GetInitialNodes(pipeMatrix, startPos);
-                var maxDistance = BFSTraversal.FindMaxDistance(startPos, initialNodes, pipeMatrix);
+                var initialNodes = Traversal.GetInitialNodes(pipeMatrix, startPos);
+                var maxDistance = Traversal.FindMaxDistance(initialNodes.First(), pipeMatrix);
                 Console.WriteLine(maxDistance);
             }
             else

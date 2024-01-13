@@ -2,7 +2,7 @@
   "profiles": {
     "Ten": {
       "commandName": "Project",
-      "commandLineArgs": "< test1.txt",
+      "commandLineArgs": "< input.txt",
       "workingDirectory": "C:\\src\\AdventOfCode\\Ten"
     }
   }

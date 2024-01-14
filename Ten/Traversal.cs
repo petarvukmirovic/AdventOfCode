@@ -108,17 +108,92 @@
 
     public static class Traversal
     {
-        public static int FindMaxDistance(TraversalNode initialNode, char[][] pipeMatrix)
+        public static int FindMaxDistance(TraversalNode initialNode, char[][] pipeMatrix) => GetLoopLengthAndVerticalLines(initialNode, pipeMatrix).Item1;
+
+        public static int FindNumberOfTilesInsideTheLoop(Position startPos, TraversalNode initialNode, char[][] pipeMatrix)
+        {
+            var verticalLines = GetLoopLengthAndVerticalLines(initialNode, pipeMatrix, startPos).Item2;
+            var numberOfTilesInsideTheLoop = 0;
+            for(int i=0; i < pipeMatrix.Length; i++)
+            {
+                if(verticalLines.TryGetValue(i, out var verticalLineIndices))
+                {
+                    for (int j = 0; j < verticalLineIndices.Count; j += 2)
+                    {
+                        var startIdx = verticalLineIndices[j];
+                        var endIdx = verticalLineIndices[j + 1];
+                        bool ignoreLine = (pipeMatrix[i][startIdx] == 'F' && pipeMatrix[i][endIdx] == '7') ||
+                                          (pipeMatrix[i][startIdx] == 'L' && pipeMatrix[i][endIdx] == 'J') ||
+                                          pipeMatrix[i][startIdx] == 'S' || pipeMatrix[i][endIdx] == 'S';
+                        for (int colIdx = startIdx + 1; colIdx < endIdx; colIdx++)
+                        {
+                            if (!ignoreLine)
+                            {
+                                numberOfTilesInsideTheLoop++;
+                            }
+                        }
+                    }
+                }
+            }
+            return numberOfTilesInsideTheLoop;
+        }
+
+
+        private static (int, Dictionary<int, List<int>>) GetLoopLengthAndVerticalLines(TraversalNode initialNode, char[][] pipeMatrix, Position? startPos = null)
         {
             int steps = 1;
-            TraversalNode currentNode = initialNode;
-            while (pipeMatrix[currentNode.current.i][currentNode.current.j] != 'S')
+            Dictionary<int, List<int>> verticalLines = new();
+            if(startPos != null)
             {
+                verticalLines[startPos.i] = new() { startPos.j };
+            }
+            TraversalNode currentNode = initialNode;
+            char currentPipe;
+            while ((currentPipe = pipeMatrix[currentNode.current.i][currentNode.current.j]) != 'S')
+            {
+                if (currentPipe != '-')
+                {
+                    if (verticalLines.TryGetValue(currentNode.current.i, out var verticalIndicesList))
+                    {
+                        verticalIndicesList.Add(currentNode.current.j);
+                    }
+                    else
+                    {
+                        verticalLines[currentNode.current.i] = new() { currentNode.current.j };
+                    }
+                }
                 currentNode = currentNode.Advance(pipeMatrix)!;
                 steps++;
             }
 
-            return steps/2;
+            foreach((int row, List<int> verticalIdx) in verticalLines)
+            {
+                verticalIdx.Sort();
+                List<int> withoutCurves = new();
+                for(int i=0; i<verticalIdx.Count; i++)
+                {
+                    currentPipe = pipeMatrix[row][verticalIdx[i]];
+                    int skipDoubleWallOffset = 0;
+                    int idxToAdd = verticalIdx[i];
+                    if(i<verticalIdx.Count-1)
+                    {
+                        char nextPipe = pipeMatrix[row][verticalIdx[i + 1]];
+                        if((currentPipe == 'F' && nextPipe == 'J') ||
+                           (currentPipe == 'L' && nextPipe == '7'))
+                        {
+                            var pipeToTake = i + (withoutCurves.Count % 2 == 1 ? 0 : 1);
+                            idxToAdd =  verticalIdx[pipeToTake];
+                            skipDoubleWallOffset = 1;
+                        }
+                    }
+                    withoutCurves.Add(idxToAdd);
+                    i += skipDoubleWallOffset;
+                }
+                verticalIdx.Clear();
+                verticalIdx.AddRange(withoutCurves);
+            }
+
+            return (steps / 2, verticalLines);
         }
 
         public static TraversalNode[] GetInitialNodes(char[][] pipeMatrix, Position startPos)

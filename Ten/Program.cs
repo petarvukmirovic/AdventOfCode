@@ -9,7 +9,7 @@ namespace Ten
               .Where(row => row.Length != 0)
               .ToArray();
 
-        private static void PartOne()
+        private static void Solve(int part = 1)
         {
             var pipeMatrix = ParsePipeMatrix();
             Position? startPos = 
@@ -19,8 +19,8 @@ namespace Ten
             if(startPos != null)
             {
                 var initialNodes = Traversal.GetInitialNodes(pipeMatrix, startPos);
-                var maxDistance = Traversal.FindMaxDistance(initialNodes.First(), pipeMatrix);
-                Console.WriteLine(maxDistance);
+                var solution = part == 1 ? Traversal.FindMaxDistance(initialNodes.First(), pipeMatrix) : Traversal.FindNumberOfTilesInsideTheLoop(startPos, initialNodes.First(), pipeMatrix);
+                Console.WriteLine(solution);
             }
             else
             {
@@ -28,9 +28,10 @@ namespace Ten
             }
         }
 
+
         static void Main(string[] args)
         {
-            PartOne();
+            Solve(part:2);
         }
     }
 }

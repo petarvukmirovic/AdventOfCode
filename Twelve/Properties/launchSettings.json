@@ -1,0 +1,9 @@
+{
+  "profiles": {
+    "Twelve": {
+      "commandName": "Project",
+      "commandLineArgs": "< single-debug.txt",
+      "workingDirectory": "C:\\src\\AdventOfCode\\Twelve\\"
+    }
+  }
+}

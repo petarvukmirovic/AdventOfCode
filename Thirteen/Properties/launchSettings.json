@@ -1,0 +1,9 @@
+{
+  "profiles": {
+    "Thirteen": {
+      "commandName": "Project",
+      "commandLineArgs": "< test.txt",
+      "workingDirectory": "C:\\src\\AdventOfCode\\Thirteen"
+    }
+  }
+}

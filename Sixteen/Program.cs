@@ -4,22 +4,10 @@ namespace Sixteen
 {
     internal class Program
     {
-        internal record Position(int i, int j)
-        {
-            public static Position operator +(Position a, Position b) => new Position(a.i+b.i, a.j+b.j);
-            public static Position operator -(Position p) => new Position(-p.i, -p.j);
-            public Position Swap() => new Position(j, i);
-        }
-        
-        static readonly Position Up = new(-1, 0);
-        static readonly Position Down = new(1, 0);
-        static readonly Position Left = new(0, -1);
-        static readonly Position Right = new(0, 1);
-
         static void PartOne()
         {
             var map = Io.AllInputLines().Select(line => line.ToCharArray()).ToArray();
-            var nrOfVisitedFields = GetNrOfVisitedFields(map, start:(new Position(0, 0), Right));
+            var nrOfVisitedFields = GetNrOfVisitedFields(map, start:(new Position(0, 0), Position.Right));
             Console.WriteLine(nrOfVisitedFields);
         }
 
@@ -33,17 +21,17 @@ namespace Sixteen
             for(int colIdx = 0; colIdx < numCols; colIdx++)
             {
                 maxNumberOfVisitedFields = Math.Max(maxNumberOfVisitedFields, 
-                                                    GetNrOfVisitedFields(map, start: (new Position(0, colIdx), Down)));
+                                                    GetNrOfVisitedFields(map, start: (new Position(0, colIdx), Position.Down)));
                 maxNumberOfVisitedFields = Math.Max(maxNumberOfVisitedFields,
-                                                   GetNrOfVisitedFields(map, start: (new Position(numRows-1, colIdx), Up)));
+                                                   GetNrOfVisitedFields(map, start: (new Position(numRows-1, colIdx), Position.Up)));
 
             }
             for (int rowIdx = 0; rowIdx < numRows; rowIdx++)
             {
                 maxNumberOfVisitedFields = Math.Max(maxNumberOfVisitedFields,
-                                                    GetNrOfVisitedFields(map, start: (new Position(rowIdx, 0), Right)));
+                                                    GetNrOfVisitedFields(map, start: (new Position(rowIdx, 0), Position.Right)));
                 maxNumberOfVisitedFields = Math.Max(maxNumberOfVisitedFields,
-                                                   GetNrOfVisitedFields(map, start: (new Position(rowIdx, numCols-1), Left)));
+                                                   GetNrOfVisitedFields(map, start: (new Position(rowIdx, numCols-1), Position.Left)));
 
             }
 
@@ -59,7 +47,7 @@ namespace Sixteen
             while(beamQueue.TryDequeue(out var pair)) 
             {
                 (var position, var direction) = pair;
-                if (PositionIsValid(position, map) && !visitedFields.Contains(pair))
+                if (position.IsValidForMatrix(map) && !visitedFields.Contains(pair))
                 {
                     visitedFields.Add(pair);
                     if (map[position.i][position.j] == '.')
@@ -68,10 +56,10 @@ namespace Sixteen
                     }
                     else if (map[position.i][position.j] == '-')
                     {
-                        if(direction == Up || direction == Down)
+                        if(direction == Position.Up || direction == Position.Down)
                         {
-                            beamQueue.Enqueue((position + Left, Left));
-                            beamQueue.Enqueue((position + Right, Right));
+                            beamQueue.Enqueue((position + Position.Left, Position.Left));
+                            beamQueue.Enqueue((position + Position.Right, Position.Right));
                         }
                         else
                         {
@@ -80,10 +68,10 @@ namespace Sixteen
                     }
                     else if (map[position.i][position.j] == '|')
                     {
-                        if (direction == Left || direction == Right)
+                        if (direction == Position.Left || direction == Position.Right)
                         {
-                            beamQueue.Enqueue((position + Up, Up));
-                            beamQueue.Enqueue((position + Down, Down));
+                            beamQueue.Enqueue((position + Position.Up, Position.Up));
+                            beamQueue.Enqueue((position + Position.Down, Position.Down));
                         }
                         else
                         {
@@ -105,10 +93,6 @@ namespace Sixteen
 
             return visitedFields.Select(pair => pair.Item1).Distinct().Count();
         }
-
-        private static bool PositionIsValid(Position nextPosition, char[][] map) =>
-            nextPosition.i >= 0 && nextPosition.i < map.Length &&
-            nextPosition.j >= 0 && nextPosition.j < map[0].Length;
 
         static void Main(string[] args)
         {

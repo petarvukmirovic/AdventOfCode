@@ -49,6 +49,7 @@ namespace Nineteen
             var graphLines = Io.AllInputLines().TakeWhile(line => !string.IsNullOrEmpty(line));
             var graph = WorkflowGraph.OfDescription(graphLines);
             var conditionsToA = graph.AllQuadruplesToAcceptingState();
+            Console.Write($"Found {conditionsToA.Length} conditions to A");
             var nrOfAcceptingQuadruples = CalculateNrOfAcceptingQuadruples(conditionsToA);
             Console.WriteLine(nrOfAcceptingQuadruples);
         }
@@ -59,13 +60,18 @@ namespace Nineteen
             Stack<RangeQuadruple> conditionsToProcess = new(conditionsToA);
             while(conditionsToProcess.TryPop(out var condition))
             {
+                Console.WriteLine($"Current nr of conditions to process: {conditionsToProcess.Count}");
                 var conditionsToAdd = FindConditionsToAdd(processedConditions, condition);
-                if (conditionsToAdd.Length == 0)
+                if (conditionsToAdd.Length != 0)
                 {
                     foreach(var cond in conditionsToAdd)
                     {
                         conditionsToProcess.Push(cond);
                     }
+                }
+                else
+                {
+                    processedConditions.Add(condition);
                 }
             }
             return processedConditions.Sum(quadruple => quadruple.TotalCombinations);
@@ -94,7 +100,7 @@ namespace Nineteen
                             foreach(var splitEl in split)
                             {
                                 currentArray[i] = splitEl;
-                                conditionsToAdd.Add(RangeQuadruple.OfArray(split));
+                                conditionsToAdd.Add(RangeQuadruple.OfArray(currentArray));
                             }
                             break;
                         }
@@ -106,7 +112,7 @@ namespace Nineteen
 
         static void Main(string[] args)
         {
-            PartOne();
+            PartTwo();
         }
     }
 }

@@ -53,6 +53,10 @@ namespace Nineteen
                 {
                     return [runningQuadruple];
                 }
+                else if (nodeName == "R")
+                {
+                    return [];
+                }
 
                 if (!visited.Contains(nodeName))
                 {

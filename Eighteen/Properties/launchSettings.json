@@ -1,0 +1,13 @@
+{
+  "profiles": {
+    "Eighteen": {
+      "commandName": "Project",
+      "commandLineArgs": "< test.txt",
+      "workingDirectory": "C:\\src\\AdventOfCode\\Eighteen"
+    },
+    "WSL": {
+      "commandName": "WSL2",
+      "distributionName": ""
+    }
+  }
+}

@@ -1,16 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Common
+﻿namespace Common
 {
 
-    public record Position(int i, int j)
+    public record Position(long i, long j)
     {
         public static Position operator +(Position a, Position b) => new Position(a.i + b.i, a.j + b.j);
         public static Position operator -(Position p) => new Position(-p.i, -p.j);
+        public static Position operator *(Position p, int c) => new Position(p.i*c, p.j*c);
         public Position Swap() => new Position(j, i);
 
         public bool IsValidForMatrix<T>(T[][] map) =>

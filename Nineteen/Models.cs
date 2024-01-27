@@ -44,7 +44,8 @@
         public record Pipeline(string name, Rule[] rulesInPipline, string defaultRule)
         {
             public string FindResultingRule(Part part) =>
-                rulesInPipline.First(rule => rule.IsSatisfied(part)).resultRule;
+                rulesInPipline.FirstOrDefault(rule => rule.IsSatisfied(part))?.resultRule
+                ?? defaultRule;
         }
     }
 }

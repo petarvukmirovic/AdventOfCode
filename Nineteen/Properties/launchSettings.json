@@ -1,0 +1,9 @@
+{
+  "profiles": {
+    "Nineteen": {
+      "commandName": "Project",
+      "commandLineArgs": "< test.txt",
+      "workingDirectory": "C:\\src\\AdventOfCode\\Nineteen"
+    }
+  }
+}

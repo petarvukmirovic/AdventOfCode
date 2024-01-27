@@ -68,15 +68,16 @@
                 return new Range(argument + 1, UpperLimit);
             }
         }
+
+        public int TotalElements => end - start + 1;
+
+        public static Range MaxRange => new Range(LowerLimit, UpperLimit);
     }
 
     internal record RangeQuadruple(Range? x, Range? m, Range? a, Range? s)
     {
         private class NotIntersectable : Exception { }
         public static RangeQuadruple Empty => new RangeQuadruple(null, null, null, null);
-
-        //private Range?[] ToArray => new Range?[] { x, m, a, s };
-        //private RangeQuadruple OfArray(Range?[] array) => new RangeQuadruple(array[0], array[1], array[2], array[3]);
 
         public RangeQuadruple? Intersect (RangeQuadruple other)
         {
@@ -112,5 +113,12 @@
 
         public RangeQuadruple Flip() =>
             new RangeQuadruple(x?.Flip(), m?.Flip(), a?.Flip(), s?.Flip());
+
+        public long TotalCombinations =>
+            (x?.TotalElements ?? 4000) * (m?.TotalElements ?? 4000) * 
+            (a?.TotalElements ?? 4000) * (s?.TotalElements ?? 4000);
+
+        public Range?[] ToArray() => [x, m, a, s];
+        public static RangeQuadruple OfArray(Range?[] array) => new RangeQuadruple(array[0], array[1], array[2], array[3]);
     }
 }

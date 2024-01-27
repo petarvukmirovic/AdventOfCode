@@ -44,6 +44,66 @@ namespace Nineteen
             Console.Write(totalRating);
         }
 
+        static void PartTwo()
+        {
+            var graphLines = Io.AllInputLines().TakeWhile(line => !string.IsNullOrEmpty(line));
+            var graph = WorkflowGraph.OfDescription(graphLines);
+            var conditionsToA = graph.AllQuadruplesToAcceptingState();
+            var nrOfAcceptingQuadruples = CalculateNrOfAcceptingQuadruples(conditionsToA);
+            Console.WriteLine(nrOfAcceptingQuadruples);
+        }
+
+        private static long CalculateNrOfAcceptingQuadruples(RangeQuadruple[] conditionsToA)
+        {
+            List<RangeQuadruple> processedConditions = new();
+            Stack<RangeQuadruple> conditionsToProcess = new(conditionsToA);
+            while(conditionsToProcess.TryPop(out var condition))
+            {
+                var conditionsToAdd = FindConditionsToAdd(processedConditions, condition);
+                if (conditionsToAdd.Length == 0)
+                {
+                    foreach(var cond in conditionsToAdd)
+                    {
+                        conditionsToProcess.Push(cond);
+                    }
+                }
+            }
+            return processedConditions.Sum(quadruple => quadruple.TotalCombinations);
+        }
+
+        private static RangeQuadruple[] FindConditionsToAdd(List<RangeQuadruple> processedConditions, RangeQuadruple condition)
+        {
+            bool IsFullyContained(Range? outerCandidate, Range? innerCandidate) =>
+                (outerCandidate == null) ||
+                (outerCandidate != null && innerCandidate != null && 
+                  innerCandidate.start >= outerCandidate.start && innerCandidate.end <= outerCandidate.end);
+
+            var conditionsToAdd = new List<RangeQuadruple>();
+
+            foreach(var processedCondition in processedConditions)
+            {
+                var processedArray = processedCondition.ToArray();
+                var currentArray = condition.ToArray();
+                for(int i=0; i<processedArray.Length; i++)
+                {
+                    if (!IsFullyContained(processedArray[i], currentArray[i]))
+                    {
+                        var split = (processedArray[i] ?? Range.MaxRange).Split(currentArray[i] ?? Range.MaxRange);
+                        if(split.Length != 0)
+                        {
+                            foreach(var splitEl in split)
+                            {
+                                currentArray[i] = splitEl;
+                                conditionsToAdd.Add(RangeQuadruple.OfArray(split));
+                            }
+                            break;
+                        }
+                    }
+                }
+            }
+            return conditionsToAdd.ToArray();
+        }
+
         static void Main(string[] args)
         {
             PartOne();

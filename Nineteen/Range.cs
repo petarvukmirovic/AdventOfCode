@@ -1,33 +1,30 @@
-﻿namespace Nineteen
+﻿
+namespace Nineteen
 {
     internal record Range(int start, int end)
     {
         public const int LowerLimit = 1;
         public const int UpperLimit = 4000;
+
         public Range[] Split(Range other)
         {
-            (var first, var second) =
-                start > other.start ? (other, this) : (this, other);
-            var result = new List<Range>();
-            if (second.start <= first.end)
+            var intersection = Intersect(other);
+            if(intersection != null)
             {
-                // part before second starts
-                if (second.start != first.start)
+                List<Range> result = new List<Range>() { intersection };
+                if(intersection.start > start)
                 {
-                    result.Add(new Range(first.start, second.start - 1));
+                    result.Add(new Range(start, intersection.start - 1));
                 }
-                // common part
-                result.Add(new Range(Math.Max(first.start, second.start), Math.Min(first.end, second.end)));
-                // part that belongs to the rest of the longer one
-                if (second.end != first.end)
+                if(intersection.end < end)
                 {
-                    result.Add(new Range(Math.Min(first.end, second.end) + 1, Math.Max(first.end, second.end)));
+                    result.Add(new Range(intersection.end + 1, end));
                 }
                 return result.ToArray();
             }
             else
             {
-                return new Range[0];
+                return [];
             }
         }
 
@@ -43,33 +40,33 @@
             }
         }
 
-        public Range Flip()
-        {
-            if(start == LowerLimit)
-            {
-                return new Range(end + 1, UpperLimit);
-            }
-            else
-            {
-                return new Range(0, LowerLimit - 1);
-            }
-        }
-        
+        public override string ToString() => $"({start}, {end})";
+
         public static Range OfDescription(string description)
         {
             char sign = description.First();
-            int argument = int.Parse(description[1..]);
-            if (sign == '<') 
+            int argument;
+            int offset = 1;
+            if (description[1] == '=')
             {
-                return new Range(LowerLimit, argument - 1);
+                offset = 0;
+                argument = int.Parse(description[2..]);
             }
             else
             {
-                return new Range(argument + 1, UpperLimit);
+                argument = int.Parse(description[1..]);
+            }
+            if (sign == '<') 
+            {
+                return new Range(LowerLimit, argument - offset);
+            }
+            else
+            {
+                return new Range(argument + offset, UpperLimit);
             }
         }
 
-        public int TotalElements => end - start + 1;
+        public long TotalElements => end - start + 1;
 
         public static Range MaxRange => new Range(LowerLimit, UpperLimit);
     }
@@ -111,14 +108,22 @@
             }
         }
 
-        public RangeQuadruple Flip() =>
-            new RangeQuadruple(x?.Flip(), m?.Flip(), a?.Flip(), s?.Flip());
-
         public long TotalCombinations =>
             (x?.TotalElements ?? 4000) * (m?.TotalElements ?? 4000) * 
             (a?.TotalElements ?? 4000) * (s?.TotalElements ?? 4000);
 
         public Range?[] ToArray() => [x, m, a, s];
         public static RangeQuadruple OfArray(Range?[] array) => new RangeQuadruple(array[0], array[1], array[2], array[3]);
+
+        public static RangeQuadruple OfRuleDescriptions(IEnumerable<string> descriptions)
+        {
+            Range[] rangeArray = [Range.MaxRange, Range.MaxRange, Range.MaxRange, Range.MaxRange];
+            foreach (var desc in descriptions)
+            {
+                var propertyIdx = desc.First() switch { 'x' => 0, 'm' => 1, 'a' => 2, _ => 3 };
+                rangeArray[propertyIdx] = rangeArray[propertyIdx].Intersect(Range.OfDescription(desc[1..])) ?? throw new InvalidDataException();
+            }
+            return OfArray(rangeArray);
+        }
     }
 }

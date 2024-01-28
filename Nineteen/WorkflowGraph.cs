@@ -11,9 +11,11 @@ namespace Nineteen
     internal class WorkflowGraph
     {
         private WorkflowGraph() { }
-        private record Node(string name, (RangeQuadruple, string)[] neighbours);
+        private record Node(string name, (RangeQuadruple, string)[] neighbours) { }
         private Dictionary<string, Node> nodes = new();
 
+        private static Range IntersectNullable(Range? a, Range? b) => 
+            (a ?? Range.MaxRange).Intersect(b ?? Range.MaxRange) ?? throw new InvalidDataException("Unparseable input file");
         public static WorkflowGraph OfDescription(IEnumerable<string> lines)
         {
             var graph = new WorkflowGraph();
@@ -23,23 +25,17 @@ namespace Nineteen
                 var name = line[..indexOfBrace];
                 var rules = line[(indexOfBrace + 1)..(line.Length - 1)].Split(',', Io.IgnoreEmptyElements);
                 var neighbours = new List<(RangeQuadruple, string)>();
-                RangeQuadruple previousQuadruple = RangeQuadruple.Empty;
+                var flippedRules = new List<string>();
                 foreach(var rule in rules.Take(rules.Length-1))
                 {
                     var ruleSplit = rule.Split(':');
                     var property = ruleSplit[0].First();
-                    var newRange = Range.OfDescription(ruleSplit[0][1..]);
-                    var conditionQuadruple = property switch
-                    {
-                        'x' => previousQuadruple.Flip() with { x = newRange },
-                        'm' => previousQuadruple.Flip() with { m = newRange },
-                        'a' => previousQuadruple.Flip() with { a = newRange },
-                        _ => previousQuadruple.Flip() with { s = newRange },
-                    };
-                    previousQuadruple = conditionQuadruple;
-                    neighbours.Add((previousQuadruple, ruleSplit[1]));
+                    var flippedRange = ruleSplit[0][1] == '<' ? ">=" + ruleSplit[0][2..] : "<=" + ruleSplit[0][2..];
+                    var nodeName = ruleSplit[1];
+                    neighbours.Add((RangeQuadruple.OfRuleDescriptions(flippedRules.Append(ruleSplit[0])), nodeName));
+                    flippedRules.Add(property + flippedRange);
                 }
-                neighbours.Add((previousQuadruple.Flip(), rules.Last()));
+                neighbours.Add((RangeQuadruple.OfRuleDescriptions(flippedRules), rules.Last()));
                 graph.nodes[name] = new Node(name, neighbours.ToArray());
             }
             return graph;
@@ -47,7 +43,7 @@ namespace Nineteen
 
        public RangeQuadruple[] AllQuadruplesToAcceptingState()
        {
-            IEnumerable<RangeQuadruple> FindQuadruplesToAcceptingState(string nodeName, RangeQuadruple runningQuadruple, HashSet<string> visited)
+            IEnumerable<RangeQuadruple> FindQuadruplesToAcceptingState(string nodeName, RangeQuadruple runningQuadruple)
             {
                 if (nodeName=="A")
                 {
@@ -58,24 +54,17 @@ namespace Nineteen
                     return [];
                 }
 
-                if (!visited.Contains(nodeName))
-                {
-                    visited.Add(nodeName);
-                    var node = nodes[nodeName];
-                    return node.neighbours
-                               .Where(neighbour => !visited.Contains(neighbour.Item2))
-                               .SelectMany(neighbour =>
-                               {
-                                   var newQuadruple = runningQuadruple.Intersect(neighbour.Item1);
-                                   return newQuadruple == null ? 
-                                            [] : FindQuadruplesToAcceptingState(neighbour.Item2, newQuadruple, visited);
-                               });
-                }
-                return [];
+
+                var node = nodes[nodeName];
+                return node.neighbours
+                            .SelectMany(neighbour =>
+                            {
+                                var newQuadruple = runningQuadruple.Intersect(neighbour.Item1);
+                                return newQuadruple == null ? 
+                                        [] : FindQuadruplesToAcceptingState(neighbour.Item2, newQuadruple);
+                            });
             }
-            
-            var startNode = "in";
-            return FindQuadruplesToAcceptingState(startNode, RangeQuadruple.Empty, new()).ToArray();
+            return FindQuadruplesToAcceptingState("in", RangeQuadruple.Empty).ToArray();
        }
     }
 }

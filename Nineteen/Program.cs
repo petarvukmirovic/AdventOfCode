@@ -1,4 +1,5 @@
 ﻿using Common;
+using System.Diagnostics;
 using static Nineteen.Models;
 
 namespace Nineteen
@@ -49,27 +50,28 @@ namespace Nineteen
             var graphLines = Io.AllInputLines().TakeWhile(line => !string.IsNullOrEmpty(line));
             var graph = WorkflowGraph.OfDescription(graphLines);
             var conditionsToA = graph.AllQuadruplesToAcceptingState();
-            Console.Write($"Found {conditionsToA.Length} conditions to A");
-            var nrOfAcceptingQuadruples = CalculateNrOfAcceptingQuadruples(conditionsToA);
-            Console.WriteLine(nrOfAcceptingQuadruples);
+            Console.WriteLine(conditionsToA.Sum(c => c.TotalCombinations));
+            Console.WriteLine($"Without repetitions: {CalculateNrOfAcceptingQuadruples(conditionsToA)}");
         }
 
         private static long CalculateNrOfAcceptingQuadruples(RangeQuadruple[] conditionsToA)
         {
             List<RangeQuadruple> processedConditions = new();
-            Stack<RangeQuadruple> conditionsToProcess = new(conditionsToA);
-            while(conditionsToProcess.TryPop(out var condition))
+            Queue<RangeQuadruple> conditionsToProcess = 
+                new(
+                    conditionsToA.OrderByDescending(q => 
+                        (q.x?.TotalElements ?? 4000, q.m?.TotalElements ?? 4000, q.a?.TotalElements ?? 4000, q.s?.TotalElements ?? 4000)));
+            while(conditionsToProcess.TryDequeue(out var condition))
             {
-                Console.WriteLine($"Current nr of conditions to process: {conditionsToProcess.Count}");
                 var conditionsToAdd = FindConditionsToAdd(processedConditions, condition);
-                if (conditionsToAdd.Length != 0)
+                if (conditionsToAdd != null && conditionsToAdd.Length != 0)
                 {
                     foreach(var cond in conditionsToAdd)
                     {
-                        conditionsToProcess.Push(cond);
+                        conditionsToProcess.Enqueue(cond);
                     }
                 }
-                else
+                else if (conditionsToAdd != null)
                 {
                     processedConditions.Add(condition);
                 }
@@ -77,37 +79,63 @@ namespace Nineteen
             return processedConditions.Sum(quadruple => quadruple.TotalCombinations);
         }
 
-        private static RangeQuadruple[] FindConditionsToAdd(List<RangeQuadruple> processedConditions, RangeQuadruple condition)
+        static bool IsSubsumed(IEnumerable<RangeQuadruple> processedSoFar, RangeQuadruple newCondition)
         {
-            bool IsFullyContained(Range? outerCandidate, Range? innerCandidate) =>
-                (outerCandidate == null) ||
-                (outerCandidate != null && innerCandidate != null && 
-                  innerCandidate.start >= outerCandidate.start && innerCandidate.end <= outerCandidate.end);
+            return processedSoFar.Any(processed => IsSubsumed(processed, newCondition));
+        }
 
+        static bool IsSubsumed(RangeQuadruple processed, RangeQuadruple newCondition) =>
+            IsSubsumed(processed.x, newCondition.x) && IsSubsumed(processed.m, newCondition.m) &&
+            IsSubsumed(processed.a, newCondition.a) && IsSubsumed(processed.s, newCondition.s);
+
+        static bool IsSubsumed(Range? outerCandidate, Range? innerCandidate) =>
+            (outerCandidate == null) ||
+            (outerCandidate != null && innerCandidate != null && 
+                innerCandidate.start >= outerCandidate.start && innerCandidate.end <= outerCandidate.end);
+
+        static bool NoIntersection(Range? a, Range? b) => a != null && b != null && a.Intersect(b) == null;
+
+        private static RangeQuadruple[]? FindConditionsToAdd(List<RangeQuadruple> processedConditions, RangeQuadruple condition)
+        {
             var conditionsToAdd = new List<RangeQuadruple>();
 
-            foreach(var processedCondition in processedConditions)
+            foreach(var processedCondition in 
+                        processedConditions.Where(p => !NoIntersection(p.x, condition.x) && !NoIntersection(p.m, condition.m) 
+                                                       && !NoIntersection(p.a, condition.a) && !NoIntersection(p.s, condition.s)))
             {
                 var processedArray = processedCondition.ToArray();
                 var currentArray = condition.ToArray();
-                for(int i=0; i<processedArray.Length; i++)
+                bool foundDifference = false;
+                for(int i=0; i<processedArray.Length && !foundDifference; i++)
                 {
-                    if (!IsFullyContained(processedArray[i], currentArray[i]))
+                    if (!IsSubsumed(processedArray[i], currentArray[i]))
                     {
-                        var split = (processedArray[i] ?? Range.MaxRange).Split(currentArray[i] ?? Range.MaxRange);
-                        if(split.Length != 0)
+                        foundDifference = true;
+                        var split = (currentArray[i] ?? Range.MaxRange).Split(processedArray[i] ?? Range.MaxRange);
+                        if (split.Length != 0)
                         {
-                            foreach(var splitEl in split)
+                            foreach (var splitEl in split)
                             {
                                 currentArray[i] = splitEl;
-                                conditionsToAdd.Add(RangeQuadruple.OfArray(currentArray));
+                                var newQuadruple = RangeQuadruple.OfArray(currentArray);
+                                if(!IsSubsumed(processedConditions, newQuadruple))
+                                {
+                                    conditionsToAdd.Add(newQuadruple);
+                                }
                             }
-                            break;
                         }
                     }
                 }
+                if (!foundDifference)
+                {
+                    return null;
+                }
+                else if (conditionsToAdd.Any())
+                {
+                    return conditionsToAdd.ToArray();
+                }
             }
-            return conditionsToAdd.ToArray();
+            return [];
         }
 
         static void Main(string[] args)

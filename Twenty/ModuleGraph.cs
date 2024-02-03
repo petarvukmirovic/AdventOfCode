@@ -103,7 +103,7 @@ namespace Twenty
             return (numLowSignals, numHighSignals);
         }
 
-        private (int numLowSignals, int numHighSignals) GetNumberOfLowAndHighSignalsForSinglePress()
+        public (int numLowSignals, int numHighSignals) GetNumberOfLowAndHighSignalsForSinglePress(Action<string, bool, string>? stoppingCondition = null)
         {
             var signalProcessingQueue = new Queue<(bool signal, string previousName, Node node)>();
             (int numLowSignals, int numHighSignals) = (1, 0);
@@ -128,6 +128,8 @@ namespace Twenty
                         {
                             numLowSignals++;
                         }
+
+                        stoppingCondition?.Invoke(signalInfo.node.Name, outSignal.Value, node);
 
                         if(Nodes.TryGetValue(node, out var neighbourNode))
                         {

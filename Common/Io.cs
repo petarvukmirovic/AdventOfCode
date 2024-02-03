@@ -11,6 +11,6 @@
             }
         }
 
-        public const StringSplitOptions IgnoreEmptyElements = StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.RemoveEmptyEntries;
+        public const StringSplitOptions IgnoreEmptyElements = StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries;
     }
 }

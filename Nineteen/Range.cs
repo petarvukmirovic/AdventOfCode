@@ -40,8 +40,6 @@ namespace Nineteen
             }
         }
 
-        public override string ToString() => $"({start}, {end})";
-
         public static Range OfDescription(string description)
         {
             char sign = description.First();

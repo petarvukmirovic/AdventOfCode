@@ -1,0 +1,9 @@
+{
+  "profiles": {
+    "Twenty": {
+      "commandName": "Project",
+      "commandLineArgs": "< input1.txt",
+      "workingDirectory": "C:\\src\\AdventOfCode\\Twenty"
+    }
+  }
+}
